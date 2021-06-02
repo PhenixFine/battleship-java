@@ -9,7 +9,7 @@ public class Main {
                 new Ship("Submarine", 3), new Ship("Cruiser", 3), new Ship("Destroyer", 2)};
 
         initializeOcean(ocean);
-        printOceanField(ocean);
+        printOceanField(ocean, false);
         placeShips(ocean, ships);
         startGame(ocean);
     }
@@ -20,12 +20,15 @@ public class Main {
         }
     }
 
-    private static void printOceanField(char[][] ocean) {
+    private static void printOceanField(char[][] ocean, boolean fog) {
+        char spot;
+
         System.out.println("  1 2 3 4 5 6 7 8 9 10");
         for (int i = 0; i < 10; i++) {
             print((char) (i + 65) + " ");
             for (int j = 0; j < 10; j++) {
-                print(j == 9 ? ocean[i][j] + "\n" : ocean[i][j] + " ");
+                spot = (fog && ocean[i][j] == 'O') ? '~' : ocean[i][j];
+                print(j == 9 ? spot + "\n" : spot + " ");
             }
         }
     }
@@ -34,7 +37,7 @@ public class Main {
         for (Ship ship : ships) {
             setCoordinate(ship, ocean);
             print("\n");
-            printOceanField(ocean);
+            printOceanField(ocean, false);
         }
     }
 
@@ -44,7 +47,7 @@ public class Main {
         boolean miss;
 
         print("\nThe game starts!\n\n");
-        printOceanField(ocean);
+        printOceanField(ocean, true);
 
         while (true) {
             position = testPosition(getString(message).toUpperCase());
@@ -54,8 +57,9 @@ public class Main {
                 miss = ocean[position[0]][position[1]] == '~';
                 ocean[position[0]][position[1]] = miss ? 'M' : 'X';
                 print("\n");
-                printOceanField(ocean);
-                print(miss ? "\nYou missed!" : "\nYou hit a ship!");
+                printOceanField(ocean, true);
+                print(miss ? "\nYou missed!\n\n" : "\nYou hit a ship!\n\n");
+                printOceanField(ocean, false);
                 return;
             }
         }
