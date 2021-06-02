@@ -11,6 +11,7 @@ public class Main {
         initializeOcean(ocean);
         printOceanField(ocean);
         placeShips(ocean, ships);
+        startGame(ocean);
     }
 
     private static void initializeOcean(char[][] ocean) {
@@ -34,6 +35,29 @@ public class Main {
             setCoordinate(ship, ocean);
             print("\n");
             printOceanField(ocean);
+        }
+    }
+
+    private static void startGame(char[][] ocean) {
+        String message = "\nTake a shot!\n\n";
+        int[] position;
+        boolean miss;
+
+        print("\nThe game starts!\n\n");
+        printOceanField(ocean);
+
+        while (true) {
+            position = testPosition(getString(message).toUpperCase());
+            if (position.length == 0 || notRange(position)) {
+                message = "\nError! You entered the wrong coordinates! Try again:\n\n";
+            } else {
+                miss = ocean[position[0]][position[1]] == '~';
+                ocean[position[0]][position[1]] = miss ? 'M' : 'X';
+                print("\n");
+                printOceanField(ocean);
+                print(miss ? "\nYou missed!" : "\nYou hit a ship!");
+                return;
+            }
         }
     }
 
@@ -76,13 +100,21 @@ public class Main {
     }
 
     private static int[] getPositions(String[] coordinates) {
-        try {
-            int num0 = coordinates[0].charAt(0) - 65;
-            int num1 = Integer.parseInt(coordinates[0].substring(1)) - 1;
-            int num2 = coordinates[1].charAt(0) - 65;
-            int num3 = Integer.parseInt(coordinates[1].substring(1)) - 1;
+        int[] first = testPosition(coordinates[0]);
+        int[] second = (first.length == 2) ? testPosition(coordinates[1]) : new int[]{};
 
-            return new int[]{Math.min(num0, num2), Math.min(num1, num3), Math.max(num0, num2), Math.max(num1, num3)};
+        if (second.length == 2) {
+            return new int[]{Math.min(first[0], second[0]), Math.min(first[1], second[1]),
+                    Math.max(first[0], second[0]), Math.max(first[1], second[1])};
+        } else return new int[]{};
+    }
+
+    private static int[] testPosition(String coordinate) {
+        try {
+            int num0 = coordinate.charAt(0) - 65;
+            int num1 = Integer.parseInt(coordinate.substring(1)) - 1;
+
+            return new int[]{num0, num1};
         } catch (Exception e) {
             return new int[]{};
         }
