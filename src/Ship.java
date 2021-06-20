@@ -2,8 +2,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Ship {
-    final String name;
-    final int size;
+    public final String name;
+    public final int size;
     private final HashMap<Integer, Integer> coordinates = new HashMap<>();
 
     public Ship(String name, int size) {
