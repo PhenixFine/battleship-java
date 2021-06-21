@@ -4,40 +4,54 @@ import java.util.Scanner;
 
 public class Battlefield {
     private final static Scanner SCAN = new Scanner(System.in);
+    private final String playerName;
     private final char[][] ocean = new char[10][10];
     private final LinkedList<Ship> ships = new LinkedList<>(Arrays.asList(
             new Ship("Aircraft Carrier", 5), new Ship("Battleship", 4),
             new Ship("Submarine", 3), new Ship("Cruiser", 3), new Ship("Destroyer", 2)));
 
-    Battlefield() {
+    private Battlefield(String playerName) {
+        this.playerName = playerName;
         initializeOcean();
     }
 
-    public static void startGame() {
-        String message = "\nTake a shot!\n\n";
-        Battlefield game = new Battlefield();
+    public static void startGame(String player1Name, String player2Name) {
+        Battlefield player1 = new Battlefield(player1Name);
+        Battlefield player2 = new Battlefield(player2Name);
+        boolean player1Turn = true;
 
-        game.placeShips();
-        System.out.println("\nThe game starts!\n");
-        game.printOceanField(true);
-        while (!game.ships.isEmpty()) {
-            int[] position = testPosition(getString(message).toUpperCase());
+        player1.placeShips();
+        clearScreen();
+        player2.placeShips();
+        while (!player1.ships.isEmpty() && !player2.ships.isEmpty()) {
+            String message;
+            int[] position;
+            Battlefield game1 = player1Turn ? player1 : player2;
+            Battlefield game2 = player1Turn ? player2 : player1;
+
+            clearScreen();
+            game2.printOceanField(true);
+            System.out.println("---------------------");
+            game1.printOceanField(false);
+            position = testPosition(getString(String.format("%n%s, it's your turn:\n\n", game1.playerName)).toUpperCase());
             if (position.length == 0 || notRange(position)) {
-                message = "\nError! You entered the wrong coordinates! Try again:\n\n";
+                message = "\nError! You entered the wrong coordinates!";
             } else {
-                char spot = game.ocean[position[0]][position[1]];
+                char spot = game2.ocean[position[0]][position[1]];
+
                 if (spot != '~' && !"VO".contains("" + spot)) {
-                    message = "\nPlease enter a new coordinate:\n\n";
+                    message = "\nCoordinate has been entered before!";
                 } else {
                     boolean miss = (spot == '~');
-                    game.ocean[position[0]][position[1]] = miss ? 'M' : 'X';
-                    message = miss ? "\nYou missed. Try again:\n\n" : game.hitShip(position[0], position[1], spot == 'V');
+
+                    game2.ocean[position[0]][position[1]] = miss ? 'M' : 'X';
+                    message = miss ? "\nYou missed!" : game2.hitShip(position[0], position[1], spot == 'V');
                 }
-                System.out.println();
-                game.printOceanField(true);
             }
+            System.out.print(message);
+            player1Turn = !player1Turn;
         }
-        System.out.println(message);
+        System.out.println();
     }
 
     private void initializeOcean() {
@@ -47,6 +61,7 @@ public class Battlefield {
     }
 
     private void placeShips() {
+        System.out.printf("%s, place your ships on the game field%n%n", playerName);
         printOceanField(false);
         for (Ship ship : ships) {
             setCoordinate(ship);
@@ -61,6 +76,7 @@ public class Battlefield {
             System.out.print((char) (i + 65) + " ");
             for (int j = 0; j < 10; j++) {
                 char spot = (ocean[i][j] == 'V') ? 'O' : ocean[i][j];
+
                 spot = (fog && spot == 'O') ? '~' : spot;
                 System.out.print(j == 9 ? spot + "\n" : spot + " ");
             }
@@ -112,9 +128,9 @@ public class Battlefield {
         if (ship.isSunk()) {
             ships.remove(ship);
             return ships.isEmpty() ? "\nYou sank the last ship. You won. Congratulations!"
-                    : "\nYou sank a ship! Specify a new target:\n\n";
+                    : "\nYou sank a ship!";
         } else {
-            return "\nYou hit a ship! Try again:\n\n";
+            return "\nYou hit a ship!";
         }
     }
 
@@ -160,6 +176,11 @@ public class Battlefield {
             if (number < 0 || number > 9) return true;
         }
         return false;
+    }
+
+    private static void clearScreen() {
+        getString("\nPress Enter and pass the move to another player");
+        System.out.println("\n".repeat(99));
     }
 
     private static String getString(String message) {
